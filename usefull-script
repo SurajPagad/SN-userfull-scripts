@@ -1,0 +1,18 @@
+//List all Nodes
+var gr = new GlideRecord('sys_cluster_node_stats');
+gr.addEncodedQuery('sys_updated_onONToday@javascript:gs.beginningOfToday()@javascript:gs.endOfToday()');
+gr.setLimit(1)
+gr.query();
+while(gr.next()){
+    var stats = gs.xmlToJSON(gr.stats).xmlstats;
+    gs.info(stats["system.cluster.node_id"] +' '+stats.sessionsummary.logged_in +'  '+stats["system.memory.in.use"])
+}
+
+//Check node user logged in to
+var gr1 = new GlideRecord('syslog_transaction');
+gr1.addEncodedQuery('sys_created_onONToday@javascript:gs.beginningOfToday()@javascript:gs.endOfToday()^client_response_timeISNOTEMPTY^sys_created_by=ROVAS');
+gr1.setLimit(1);
+gr1.query();
+if(gr1.next()){
+    gs.info(gr1.system_id)
+}
