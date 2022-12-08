@@ -16,3 +16,36 @@ gr1.query();
 if(gr1.next()){
     gs.info(gr1.system_id)
 }
+
+// Delete records in bulk
+var vTable = 'CHANGE_ME'; // table that you want to delete data from
+var vEncodedQuery = 'CHANGE_ME'; // use the encoded query from the platform for the records that you want to delete
+
+// No need to modify any of the following code
+
+deleteBatch(vTable, vEncodedQuery);
+
+function deleteBatch(pTable, pEncodedQuery) {
+    gs.log('Before Delete: ' + getRecordCount(pTable, pEncodedQuery), 'DeleteBatch');
+    try {
+        var md = new GlideMultipleDelete(pTable);
+        md.addQueryString(pEncodedQuery);
+        //md.setAllowCascadeDelete(true); ==> this method will work only with the maint role
+        md.execute();
+    } finally {
+        gs.log('After Delete:' + getRecordCount(pTable, pEncodedQuery), 'DeleteBatch');
+    }
+}
+
+function getRecordCount(pTable, pEncodedQuery) {
+    var ga = new GlideAggregate(pTable);
+    ga.addEncodedQuery(pEncodedQuery);
+    ga.addAggregate('COUNT');
+    ga.query();
+    var rowCount = 0;
+    if (ga.next())
+        rowCount = ga.getAggregate('COUNT');
+    return rowCount;
+}
+
+
