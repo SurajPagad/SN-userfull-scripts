@@ -3,6 +3,7 @@
     var instanceName = gs.getProperty('instance_name');
     var instanceURL = 'https://' + instanceName + '.service-now.com/';
     var grSUHL = new GlideRecord('sys_upgrade_history_log');
+    // Set the upgrade history
     grSUHL.addEncodedQuery("upgrade_history=fe91d862c31021108139f83ce0013114^dispositionIN4,5,104,105,9,10^changed=true^ORdisposition=9^resolution_status=not_reviewed^ORresolution_status=");
     //grSUHL.orderByDesc();
     //grSUHL.setLimit(100);
