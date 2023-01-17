@@ -1,0 +1,56 @@
+(function() {
+    var result = [];
+    var instanceName = gs.getProperty('instance_name');
+    var instanceURL = 'https://' + instanceName + '.service-now.com/';
+    var grSUHL = new GlideRecord('sys_upgrade_history_log');
+    grSUHL.addEncodedQuery("upgrade_history=fe91d862c31021108139f83ce0013114^dispositionIN4,5,104,105,9,10^changed=true^ORdisposition=9^resolution_status=not_reviewed^ORresolution_status=");
+    //grSUHL.orderByDesc();
+    //grSUHL.setLimit(100);
+    grSUHL.query();
+    while (grSUHL.next()) {
+        var fileObject = {};
+        var fileName = grSUHL.getValue('file_name');
+        var tableName = grSUHL.getValue('sys_source_table');
+        var appFileGr = getAppFile(fileName, tableName);
+        fileObject = {};
+        //fileObject['Name'] = appFileGr.getValue('sys_update_name');
+        fileObject['Name'] = appFileGr != 'NA' ? appFileGr.getValue('sys_name') : 'NA';
+        fileObject['Type'] = appFileGr != 'NA' ? appFileGr.getDisplayValue('sys_class_name') : 'NA';
+        fileObject['Priority'] = grSUHL.getDisplayValue('type_priority');
+        fileObject['File URL'] = appFileGr != 'NA' ? instanceURL + getRecordURL(appFileGr.getValue('sys_class_name'), appFileGr.getValue('sys_id')) : 'NA';
+        fileObject['Last Modified By'] = appFileGr != 'NA' ? appFileGr.getValue('sys_updated_by') : 'NA';
+        fileObject['Product Category'] = grSUHL.getValue('application_category');
+        fileObject['Upgrade History log link'] = instanceURL + grSUHL.getLink();
+        var custUpdate = getCustomerUpdate(fileName);
+        fileObject['Update Set'] = custUpdate != 'NA' ? instanceURL + getRecordURL('sys_update_set', custUpdate.getValue('update_set')) : 'NA';
+        result.push(fileObject);
+    }
+
+    function getCustomerUpdate(fileName) {
+        var custUpdate = new GlideRecord('sys_update_xml');
+        custUpdate.addEncodedQuery('name=' + fileName);
+        custUpdate.orderByDesc('sys_updated_on');
+        custUpdate.query();
+        if (custUpdate.next())
+            return custUpdate;
+        return 'NA';
+    }
+
+    function getRecordURL(tableName, tableSysID) {
+        var gr = new GlideRecord(tableName);
+        if (gr.get(tableSysID))
+            return gr.getLink();
+    }
+
+    function getAppFile(fileName, tableName) {
+        var file = new GlideRecord("sys_metadata");
+        file.addQuery("sys_update_name", fileName);
+        file.query();
+        if (!file.next())
+            return 'NA';
+        else
+            return file;
+    }
+    gs.log(JSON.stringify(result), 'Skipped updates to review');
+    //gs.log(JSON.stringify(result, null, '   '), 'Skipped updates to review');
+})();
