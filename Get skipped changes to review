@@ -4,7 +4,7 @@
     var instanceURL = 'https://' + instanceName + '.service-now.com/';
     var grSUHL = new GlideRecord('sys_upgrade_history_log');
     // Set the upgrade history
-    grSUHL.addEncodedQuery("upgrade_history=fe91d862c31021108139f83ce0013114^dispositionIN4,5,104,105,9,10^changed=true^ORdisposition=9^resolution_status=not_reviewed^ORresolution_status=");
+    grSUHL.addEncodedQuery("upgrade_history=ea3a0b621b000210cec140c6cc4bcbf8^dispositionIN4,5,104,105,9,10^changed=true^ORdisposition=9^resolution_status=not_reviewed^ORresolution_status=");
     //grSUHL.orderByDesc();
     //grSUHL.setLimit(100);
     grSUHL.query();
@@ -52,6 +52,16 @@
         else
             return file;
     }
-    gs.log(JSON.stringify(result), 'Skipped updates to review');
-    //gs.log(JSON.stringify(result, null, '   '), 'Skipped updates to review');
+    var resStr;
+    var labels;
+    for (var idx in result) {
+        var obj = result[idx];
+        if (!labels)
+            labels = Object.keys(obj).join(',');
+        for (var key in obj)
+            resStr += obj[key] + ',';
+        resStr += '\n';
+    }
+    gs.log(labels + '\n' + resStr, 'Skipped updates to review');// CSV
+    gs.log(JSON.stringify(result, null, '   '), 'Skipped updates to review');// JSON
 })();
