@@ -29,6 +29,7 @@ while (updateVersionGR.next()) {
 		'File name':updateVersionGR.getDisplayValue('record_name'),
         'Prev update set name': updateVersionGR.getDisplayValue('source'),
 		'Prev update set ID':updateVersionGR.getValue('source'),
+		'Recorded at':updateVersionGR.getDisplayValue('sys_recorded_at')
     });
 }
 
