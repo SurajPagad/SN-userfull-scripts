@@ -1,0 +1,35 @@
+var updateSets = [];
+var updateSetGR = new GlideRecord('sys_update_set');
+updateSetGR.addQuery('name', 'IN', 'Default');
+updateSetGR.query();
+while (updateSetGR.next()) {
+    updateSets.push(updateSetGR.getUniqueValue());
+}
+
+var files = [];
+var customerUpdateGR = new GlideRecord('sys_update_xml');
+customerUpdateGR.addQuery('update_set', 'IN', updateSets);
+customerUpdateGR.query();
+while (customerUpdateGR.next()) {
+    files.push(customerUpdateGR.getValue('name'));
+}
+
+var preUpdateVersions = {};
+var updateVersionGR = new GlideRecord('sys_update_version');
+updateVersionGR.addQuery('name', 'IN', files);
+updateVersionGR.addQuery('source','NOT IN', updateSets);
+updateVersionGR.addQuery('state', 'previous');
+updateVersionGR.orderByDesc('sys_recorded_at');
+//updateVersionGR.setLimit(25);
+updateVersionGR.query();
+while (updateVersionGR.next()) {
+    if (typeof preUpdateVersions[updateVersionGR.name] == 'undefined')
+        preUpdateVersions[updateVersionGR.name] = [];
+    preUpdateVersions[updateVersionGR.name].push({
+		'File name':updateVersionGR.getDisplayValue('record_name'),
+        'Prev update set name': updateVersionGR.getDisplayValue('source'),
+		'Prev update set ID':updateVersionGR.getValue('source'),
+    });
+}
+
+gs.print(JSON.stringify(preUpdateVersions, '', '  '));
